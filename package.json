@@ -1,0 +1,16 @@
+{
+  "name": "parklane",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node parklane-server.js"
+  },
+  "dependencies": {
+    "express": "3.x",
+    "mysql": "*",
+    "ejs": "*",
+    "socket.io": "*",
+    "d3": "*",
+    "less-middleware": "*"
+  }
+}
