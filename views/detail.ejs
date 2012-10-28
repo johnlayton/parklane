@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/stylesheets/table.css' />
+  </head>
+  <body>
+
+    <div id="container">
+    </div>
+
+    <script src="/browserify.js"></script>
+    <script>
+
+      var _  = require('underscore');
+      var d3 = require('d3');
+
+      var domready = require('domready');
+
+      domready(function () {
+        var i = 0;
+
+        d3.json("../json/" + '<%= parent %>', function( json ) {
+
+          var data = _.map( json, function( rows ) {
+            return _.reduce( rows, function( ctx, row ) { 
+              ctx[row.label] = row.value; 
+              return ctx;
+            }, { id: rows[0].id, name: rows[0].name } )
+          });
+
+          var labels = _.uniq( _.pluck( _.flatten( json ), "label" ) )
+          var columns = [{ style: "fixed", label: "id" }].concat( _.map( labels, function( label ) { return { style: "float", label: label } } ) )
+
+          var table = d3.select("#container").append("table"),
+              thead = table.append("thead"),
+              tbody = table.append("tbody");
+
+          thead.append("tr")
+              .selectAll("th")
+              .data( columns )
+              .enter()
+              .append("th")
+                .text(          function( column ) { return column.label; })
+                .attr( "class", function( column ) { return column.style; });
+                
+          var rows = tbody.selectAll("tr")
+              .data(data)
+              .enter()
+              .append("tr");
+
+          var cells = rows.selectAll("td")
+              .data( function( rows ) {
+                  return _.map( columns, function( column ) {
+                      return {style: column.style, value: rows[column.label]};
+                  });
+              })
+              .enter()
+              .append("td")
+                  .text(         function( column ) { return column.value; })
+                  .attr("class", function( column ) { return column.style; });
+        });
+      });
+    </script>
+
+  </body>
+</html>

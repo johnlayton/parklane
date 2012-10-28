@@ -5,8 +5,8 @@ exports.show = function(req, res){
 
   util.log( util.inspect( req.params ) );
 
-  res.render('tree', { 
-    title: 'Structure', 
+  res.render('plan', { 
+    title: 'Planner', 
     parent: req.params.id
   });
 }
@@ -39,7 +39,7 @@ exports.json = function(req, res){
       if (rows && rows.length > 0) {
         var called = 0;
         node.children = []
-        node.link = "http://localhost:3001/tree/show/" + node.id
+        node.link = "http://localhost:3001/detail/show/" + node.id
         for ( var i = 0 ; i < rows.length ; i ++ ) {
           node.children.push( rows[i] )
           query( conn, child, rows[i], function( self ) { 
@@ -50,7 +50,7 @@ exports.json = function(req, res){
           });
         }
       } else {
-        node.link = "http://localhost:3001/tree/show/" + node.id
+        node.link = "http://localhost:3001/detail/show/" + node.id
         callback( node );
       }
     });
