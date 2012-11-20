@@ -6,15 +6,20 @@
     "start": "node parklane-server.js"
   },
   "dependencies": {
-    "domready"        : "*",
-    "browserify"      : "*",
-    "underscore"      : "*",
-    "express"         : "3.x",
-    "mysql"           : "*",
-    "ejs"             : "*",
-    "socket.io"       : "*",
-    "d3"              : "*",
-    "less-middleware" : "*",
-    "node-sass"       : "*"
+    "d8"                : "*",
+    "date-utils"        : "*",
+    "jquery-browserify" : "*",
+    "domready"          : "*",
+    "browserify"        : "*",
+    "underscore"        : "*",
+    "express"           : "*",
+    "mysql"             : "*",
+    "ejs"               : "*",
+    "socket.io"         : "*",
+    "d3"                : "*",
+    "less-middleware"   : "*",
+    "node-sass"         : "*",
+    "underscore.nested" : "*",
+    "deepmerge"         : "*"
   }
 }

@@ -23,43 +23,44 @@
 
         d3.json("../json/" + '<%= parent %>', function( json ) {
 
-          var data = _.map( json, function( rows ) {
-            return _.reduce( rows, function( ctx, row ) { 
-              ctx[row.label] = row.value; 
-              return ctx;
-            }, { id: rows[0].id, name: rows[0].name } )
-          });
+        var labels = _.uniq( _.pluck( _.flatten( _.pluck( json, "properties" ) ), "name" ) )
+        var columns = [{ style: "fixed", label: "id" }].concat( _.map( labels, function( label ) { return { style: "float", label: label } } ) )
 
-          var labels = _.uniq( _.pluck( _.flatten( json ), "label" ) )
-          var columns = [{ style: "fixed", label: "id" }].concat( _.map( labels, function( label ) { return { style: "float", label: label } } ) )
+        var table = d3.select("#container").append("table"),
+            thead = table.append("thead"),
+            tbody = table.append("tbody");
 
-          var table = d3.select("#container").append("table"),
-              thead = table.append("thead"),
-              tbody = table.append("tbody");
+        thead.append("tr")
+            .selectAll("th")
+            .data( columns )
+            .enter()
+            .append("th")
+              .text(          function( column ) { return column.label; })
+              .attr( "class", function( column ) { return column.style; });
+              
+        var rows = tbody.selectAll("tr")
+            .data( json )
+            .enter()
+            .append("tr");
 
-          thead.append("tr")
-              .selectAll("th")
-              .data( columns )
-              .enter()
-              .append("th")
-                .text(          function( column ) { return column.label; })
-                .attr( "class", function( column ) { return column.style; });
-                
-          var rows = tbody.selectAll("tr")
-              .data(data)
-              .enter()
-              .append("tr");
-
-          var cells = rows.selectAll("td")
-              .data( function( rows ) {
-                  return _.map( columns, function( column ) {
-                      return {style: column.style, value: rows[column.label]};
-                  });
-              })
-              .enter()
-              .append("td")
-                  .text(         function( column ) { return column.value; })
-                  .attr("class", function( column ) { return column.style; });
+        var cells = rows.selectAll("td")
+            .data( function( row ) {
+                return _.map( columns, function( column ) {
+                  if( column.label === 'id' )
+                  {
+                    return { style: column.style, value: row.id + " " + row.name };
+                  }
+                  else
+                  {
+                    var property = _.find( row.properties, function( elem ) { return elem.name == column.label } );
+                    return { style: column.style, value: property ? property.value : '' };
+                  }
+                });
+            })
+            .enter()
+            .append("td")
+                .text(         function( column ) { return column.value; })
+                .attr("class", function( column ) { return column.style; });
         });
       });
     </script>

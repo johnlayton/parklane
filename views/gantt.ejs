@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/stylesheets/gantt.css' />
+    <!-- <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Unkempt'> -->
+  </head>
+  <body>
+
+    <div id="chart">
+    </div>
+
+    <script src="/browserify.js"></script>
+
+    <script>
+
+      var d3 = require('d3');
+      var _  = require('underscore');
+      var $  = require('jquery-browserify');
+
+      var m = [20, 20, 20, 20],
+          w = 1280 - m[1] - m[3],
+          h =  800 - m[0] - m[2],
+          duration = 500,
+          root;
+
+      var tree = d3.layout.tree()
+        .size([h, 100]);
+
+      var vis = d3.select("#chart").append("svg")
+        .attr("width",  w + m[1] + m[3])
+        .attr("height", h + m[0] + m[2])
+        .append("g")
+        .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+      $.ajax({
+        url: '../json/<%= parent %>',
+        dataType: 'json',
+        data: { 
+          name: '<%= name %>',
+          from: new Date( '<%= from %>' ).toJSON(),
+          to:   new Date( '<%= to %>' ).toJSON() 
+        },
+        success: function(json) {
+          json.x0 = 0;
+          json.y0 = 0;
+          draw( root = json )
+        }
+      });
+
+      function label( node ) {
+        return node.name;
+      }
+
+      function collapse( d ) {
+        if ( d.children ) {
+          d._children = d.children;
+          d._children.forEach( collapse );
+          d.children = null;
+        }
+        return d
+      }
+
+      function click( d ) {
+        if ( d.children ) {
+          d._children = d.children;
+          d.children = null;
+        } else {
+          d.children = d._children;
+          d._children = null;
+        }
+        draw( d );
+      }
+
+      function color(d) {
+        return d._children ? "#3182bd" : d.children ? "#c6dbef" : "#fd8d3c";
+      }
+
+      function draw( json ) {
+
+        var t0 = new Date( '<%= from %>' ),
+            t1 = new Date( '<%= to %>' );
+
+        var x0 = d3.time.scale().domain([t0, t1]).range([100, w]);
+
+        // ================================================================================
+        // Axis Ticks
+        // ================================================================================
+
+        var format = d3.time.format("%m/%d");
+
+
+        var tick = vis.selectAll("g.tick")
+          .data(x0.ticks(20))
+
+        var tickEnter = tick.enter().append("svg:g")
+          .attr("class", "tick")
+          .attr("transform", function(d) { 
+            return "translate(" + x0(d) + "," + 20 + ")"; 
+            // return "translate(" + x0(d) + "," + (h / 2) + ")"; 
+          });
+
+        tickEnter.append("svg:line")
+          .attr("y1", 20)
+          .style("stroke", "#000")
+          .style("stroke-width", "1.5px");
+
+        tickEnter.append("svg:line")
+          .attr("y1", h / 2)
+          .style("stroke", "#bbb")
+          .style("stroke-width", "1.5px");
+
+
+        tickEnter.append("svg:text")
+          .attr("y", -15)
+          .attr("dy", ".71em")
+          .attr("text-anchor", "middle")
+          // .style("font", "10px sans-serif")
+          .text(format);
+
+        // ================================================================================
+        // Task Tree
+        // ================================================================================
+
+        var nodes = tree.nodes( root );
+
+        nodes.forEach(function(d, index) { 
+          // d.y = ( 10 + ( d.depth * 10 ) );
+          d.x = 0;
+          d.y = ( 20 + ( index * 25 ) );
+        });
+
+        var tasks = vis.selectAll("g.task")
+          .data(nodes, function( d, index ) { 
+            return d.index || ( d.index = index ); 
+          });
+ 
+        var task = tasks.enter().append("svg:g")
+          .attr("class", "task")
+          .style("opacity", 1e-6)
+          .attr("transform", function(d) { 
+            return "translate(" + d.x + "," + json.y0 + ")"; 
+          })
+
+        task.append("svg:text")
+          .attr("class", "label")
+          .attr("transform", function(d) { 
+            return "translate(" + ( d.depth * 10 ) + "," + 0 + ")"; 
+          })
+          .attr("dy", 13.5)
+          // .attr("dx", 5.5)
+          .text(function(d) { 
+            return label( d ); 
+          })
+          .on("click", click);
+ 
+        // ================================================================================
+        // Gantt layout - Valid Tasks
+        // ================================================================================
+
+        var valid = task.selectAll("g.valid")
+          .data( function(node, index) { 
+            if ( node.valid ) {
+              return _.map( node.valid, function( valid ) { return { 
+                  id: node.id
+                , idx: index  
+                , name: node.name
+                , start: valid.start
+                , finish: valid.finish  
+              } } );
+            } else {
+              return [];
+            }
+          })
+          .enter()
+          .append("svg:g")
+          .attr("class", "valid")
+          .attr("transform", function( valid ) {
+            if ( valid ) {
+              return "translate(" + x0( new Date( valid.start ) ) + "," + 0 + ")"; 
+            } else {
+              return "translate(0,0)";
+            }
+          });
+
+        valid.append("rect")
+          .attr("width", function( valid ) {
+            return ( x0( new Date( valid.finish ) ) - x0( new Date( valid.start ) ) );
+          })
+          .attr("rx", "4")
+          .attr("ry", "4")
+          .attr("height", 20)
+          .style("fill", "lightblue")
+          .style("stroke", "darkblue")
+          .style("stroke-width", "1")
+          .style("opacity", "0.5")
+          .style("stroke-dasharray", "5,5")
+
+        // ================================================================================
+        // Gantt layout - Linked Tasks
+        // ================================================================================
+
+        var linked = task.selectAll("g.linked")
+          .data( function(node, index) { 
+            if ( node.linked ) {
+              return _.map( node.linked, function( linked ) { return { 
+                  id: node.id
+                , link: node.link  
+                , idx: index  
+                , name: node.name
+                , start: linked.start
+                , finish: linked.finish  
+              } } );
+            } else {
+              return [];
+            }
+          })
+          .enter()
+          .append("svg:g")
+          .attr("class", "linked")
+          .attr("transform", function( linked ) {
+            if ( linked ) {
+              return "translate(" + x0( new Date( linked.start ) ) + "," + 0 + ")"; 
+            } else {
+              return "translate(0,0)";
+            }
+          });
+
+        linked.append("rect")
+          .attr("width", function( linked ) {
+            return ( x0( new Date( linked.finish ) ) - x0( new Date( linked.start ) ) );
+          })
+          .attr("height", 20)
+          .attr("rx", "4")
+          .attr("ry", "4")
+          .style("fill", "lightsteelblue")
+          .on( "click", function(d) { 
+            //alert( d.link ); 
+            window.open( d.link, "_self" )
+          });
+
+        // ================================================================================
+        // Exit Strategy
+        // ================================================================================
+
+        task.transition()
+            .duration(duration)
+            .attr("transform", function(d) { 
+              return "translate(" + d.x + "," + d.y + ")"; 
+            })
+            .style("opacity", 1);
+        
+        tasks.transition()
+          .duration(duration)
+          .attr("transform", function(d) { 
+            return "translate(" + d.x + "," + d.y + ")"; 
+          })
+          .style("opacity", 1)
+          .select("rect")
+          .style("fill", "lightsteelblue");
+        
+        tasks.exit().transition()
+          .duration(duration)
+          .attr("transform", function(d) { 
+            return "translate(" + d.x0 + "," + d.y0 + ")"; 
+          })
+          .style("opacity", 1e-6)
+          .remove();
+
+        nodes.forEach(function(d) {
+          d.x0 = d.x;
+          d.y0 = d.y;
+        });
+
+
+      }
+    </script>
+  </body>
+</html>

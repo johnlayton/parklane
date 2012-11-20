@@ -1,5 +1,6 @@
 var util = require('util')
 var mysql = require('mysql')
+var sql   = require('../lib/sql-library.js')
 
 exports.show = function(req, res){
 
@@ -22,18 +23,6 @@ exports.json = function(req, res){
     password : 'tree'
   });
 
-  function child( node ) {
-    return "select task.id, task.name from tree.task task "+
-           "inner join tree.tasks on task.id = tasks.child "+
-           "where tasks.parent = " + node.id
-  }
-
-  function root() {
-    return "select task.id, task.name from tree.task task "+
-           "left outer join tree.tasks tasks on task.id = tasks.child "+
-           "where tasks.parent is null"
-  }
-  
   function query( conn, generator, node, callback ) {
     conn.query( generator(node), function( err, rows, fields) { 
       if (rows && rows.length > 0) {
@@ -42,7 +31,7 @@ exports.json = function(req, res){
         node.link = "http://localhost:3001/detail/show/" + node.id
         for ( var i = 0 ; i < rows.length ; i ++ ) {
           node.children.push( rows[i] )
-          query( conn, child, rows[i], function( self ) { 
+          query( conn, sql.child, rows[i], function( self ) { 
             called = called + 1;
             if ( called == rows.length ) {
               callback( node );
@@ -58,13 +47,13 @@ exports.json = function(req, res){
   }
 
   if ( req.params.id == "root" ) {
-    query(db, root, {}, function( top ) { 
+    query(db, sql.root, {}, function( top ) { 
       util.log( util.inspect( top, true, 10 ) )	
       res.send( top )
       db.end()
     });
   } else {
-    query(db, child, { 'id': req.params.id }, function( top ) { 
+    query(db, sql.child, { 'id': req.params.id }, function( top ) { 
       util.log( util.inspect( top, true, 10 ) )	
       res.send( top )
       db.end()

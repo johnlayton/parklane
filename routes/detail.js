@@ -1,6 +1,7 @@
-var util       = require('util')
-var mysql      = require('mysql')
-var underscore = require('underscore')
+var util  = require('util')
+var mysql = require('mysql')
+var _     = require('underscore')
+var sql   = require('../lib/sql-library.js')
 
 exports.show = function(req, res){
   res.render('detail', { 
@@ -17,29 +18,6 @@ exports.json = function(req, res){
     user     : 'tree',
     password : 'tree'
   });
-
-  function identity( node ) {
-    return node.id
-  }
-
-  function details( node ) {
-    return "select detail.name, details.value from tree.detail detail " +
-           "inner join tree.details details on detail.id = details.detail " +
-           "inner join tree.task task on task.id = details.task " +
-           "where task.id = " + identity( node );
-  }
-
-  function child( node ) {
-    return "select task.id, task.name from tree.task task " +
-           "inner join tree.tasks tasks on task.id = tasks.child " +
-           "where tasks.parent = " + identity( node )
-  }
-
-  function root() {
-    return "select task.id, task.name from tree.task task "+
-           "left outer join tree.tasks tasks on task.id = tasks.child "+
-           "where tasks.parent is null"
-  }
 
   function props( conn, generator, node, list, callback ) {
     conn.query( generator( node ), function( err, results, fields ) {
@@ -68,11 +46,12 @@ exports.json = function(req, res){
       else if (results && results.length > 0) {
         var called = 0;
         for ( var i = 0 ; i < results.length ; i ++ ) {
+          
           var inner = results[i]
           list.push( inner )
 
           //add props to inner
-          props( conn, details, inner, list, function( self ) {
+          props( conn, sql.details, inner, list, function( self ) {
             called = called + 1;
             if ( called == ( results.length + 1 ) ) {
               callback( list );
@@ -80,7 +59,7 @@ exports.json = function(req, res){
           })
 
           // add children to list
-          query( conn, child, inner, list, function( self ) {
+          query( conn, sql.child, inner, list, function( self ) {
             called = called + 1;
             if ( called == ( results.length + 1 ) ) {
               callback( list );
@@ -94,13 +73,13 @@ exports.json = function(req, res){
   }
 
   if ( req.params.id == "root" ) {
-    query(db, root, {}, [], function( top ) { 
+    query(db, sql.root, {}, [], function( top ) { 
       util.log( util.inspect( top, true, 10 ) ) 
       res.send( top )
       db.end()
     });
   } else {
-    query(db, child, { 'id': req.params.id }, [], function( top ) { 
+    query(db, sql.child, { 'id': req.params.id }, [], function( top ) { 
       util.log( util.inspect( top, true, 10 ) ) 
       res.send( top )
       db.end()
