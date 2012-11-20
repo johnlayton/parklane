@@ -3,4 +3,5 @@ node_modules
 .DS_Store
 table.css
 gantt.css
+style.css
 
