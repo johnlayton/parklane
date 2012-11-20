@@ -6,7 +6,7 @@ var sql   = require('../lib/sql-library.js')
 
 exports.list = function(req, res){
 
-  var db = mysql.createClient({
+  var db = mysql.createConnection({
       host     : '192.168.56.101'
     , database : 'tree'
     , user     : 'tree'

@@ -1,7 +1,6 @@
 var express = require('express')
   , main    = require('./routes/main.js')
   , tree    = require('./routes/tree.js')
-  , plan    = require('./routes/plan.js')
   , detail  = require('./routes/detail.js')
   , dates   = require('./routes/dates.js')
   , gantt   = require('./routes/gantt.js')
@@ -14,8 +13,6 @@ var express = require('express')
   , path    = require('path');
 
 var app = express();
-
-util.log( util.inspect( sql.identity( { id: { major: 1, minor: 2, patch: 3 }, desc: "the description" } ) ) );
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3001);
@@ -52,9 +49,6 @@ app.get('/', main.index);
 
 app.get('/tree/show/:id', tree.show); 
 app.get('/tree/json/:id', tree.json); 
-
-app.get('/plan/show/:id', plan.show); 
-app.get('/plan/json/:id', plan.json); 
 
 app.get('/detail/show/:id', detail.show);
 app.get('/detail/json/:id', detail.json);

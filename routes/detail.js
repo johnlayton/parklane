@@ -12,7 +12,7 @@ exports.show = function(req, res){
 
 exports.json = function(req, res){
 
-  var db = mysql.createClient({
+  var db = mysql.createConnection({
     host     : '192.168.56.101',
     database : 'tree',
     user     : 'tree',

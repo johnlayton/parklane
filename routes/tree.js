@@ -23,7 +23,7 @@ exports.json = function(req, res){
   var from = new Date( Date.parse( req.query.from ) ).clearTime();
   var to   = new Date( Date.parse( req.query.to ) ).clearTime().add({ days: 1 })
 
-  var db = mysql.createClient({
+  var db = mysql.createConnection({
     host     : '192.168.56.101',
     database : 'tree',
     user     : 'tree',
