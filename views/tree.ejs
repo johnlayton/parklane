@@ -3,6 +3,7 @@
   <head>
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/tree.css' />
+    <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
 
@@ -62,9 +63,9 @@
 
       function label( node ) {
         var label = node.name;
-        if ( node.linked ) {
-          label += "(" + new Date( node.linked.start ).toLocaleString() + "->" + new Date( node.linked.finish ).toLocaleString() + ")";
-        }
+        // if ( node.linked ) {
+        //   label += "(" + new Date( node.linked.start ).toLocaleString() + "->" + new Date( node.linked.finish ).toLocaleString() + ")";
+        // }
         return label;
       }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html> -->
 <html>
   <head>
     <title><%= title %></title>
@@ -7,62 +7,131 @@
   </head>
   <body>
 
-    <div id="container">
+    <div id="chart">
     </div>
 
     <script src="/browserify.js"></script>
     <script>
 
-      var _  = require('underscore');
       var d3 = require('d3');
+      var _  = require('underscore');
+      var $  = require('jquery-browserify');
+      var traverse = require('traverse');
 
-      var domready = require('domready');
+      var m = [20, 20, 20, 20],
+          w = 1280 - m[1] - m[3],
+          h =  800 - m[0] - m[2],
+          i = 0,
+          duration = 500,
+          root;
 
-      domready(function () {
-        var i = 0;
+      var tree = d3.layout.tree();
 
-        d3.json("../json/" + '<%= parent %>', function( json ) {
+      var table = d3.select("#chart").append("table");
 
-        var labels = _.uniq( _.pluck( _.flatten( _.pluck( json, "properties" ) ), "name" ) )
-        var columns = [{ style: "fixed", label: "id" }].concat( _.map( labels, function( label ) { return { style: "float", label: label } } ) )
+      var thead = table.append("thead");
+      var tbody = table.append("tbody");
 
-        var table = d3.select("#container").append("table"),
-            thead = table.append("thead"),
-            tbody = table.append("tbody");
+      thead.append("tr")
 
-        thead.append("tr")
-            .selectAll("th")
+      $.ajax({
+        url: '../json/<%= parent %>',
+        dataType: 'json',
+        data: { 
+          name: '<%= name %>',
+          from: new Date( '<%= from %>' ).toJSON(),
+          to:   new Date( '<%= to %>' ).toJSON() 
+        },
+        success: function(json) {
+          json.x0 = 0;
+          json.y0 = 0;
+          draw( root = json )
+        }
+      });
+
+
+      function label( node ) {
+        return node.name;
+      }
+
+      function collapse( d ) {
+        if ( d.children ) {
+          d._children = d.children;
+          d._children.forEach( collapse );
+          d.children = null;
+        }
+        return root
+      }
+
+      function click( d ) {
+        if ( d.children ) {
+          d._children = d.children;
+          d.children = null;
+        } else {
+          d.children = d._children;
+          d._children = null;
+        }
+        draw( root );
+      }
+
+      function draw( data ) {
+
+        var labels = _.uniq( _.map( traverse(data).reduce(function (acc, x) {
+            if (this.key == 'detail') {
+              acc.push(x);
+            }
+            return _.flatten( acc );
+        }, []), function( node ) { return node.name; }) );
+
+        console.log( labels );
+
+        var columns = [{ style: "fixed", label: "id" }].concat( _.map( labels, function( label ) { 
+          return { style: "float", label: label }; 
+        }))
+
+        var nodes = tree.nodes( data ).sort();
+
+        var ths = thead.selectAll("tr").selectAll("th")
             .data( columns )
-            .enter()
+        
+        var th = ths.enter()
             .append("th")
               .text(          function( column ) { return column.label; })
               .attr( "class", function( column ) { return column.style; });
-              
-        var rows = tbody.selectAll("tr")
-            .data( json )
-            .enter()
-            .append("tr");
 
-        var cells = rows.selectAll("td")
-            .data( function( row ) {
-                return _.map( columns, function( column ) {
-                  if( column.label === 'id' )
-                  {
-                    return { style: column.style, value: row.id + " " + row.name };
-                  }
-                  else
-                  {
-                    var property = _.find( row.properties, function( elem ) { return elem.name == column.label } );
-                    return { style: column.style, value: property ? property.value : '' };
-                  }
-                });
+        var trs = tbody.selectAll("tr")
+            .data(nodes, function(d) { 
+              return d.depth + "." + d.id || ( d.id = ++i )
+            });
+
+        var tr = trs.enter()
+            .append("tr")
+            .on("click", click);
+
+        trs.order();
+
+        var tds = tr.selectAll("td")
+            .data( function( node ) {
+              return _.map( columns, function( column ) {
+                if( column.label === 'id' )
+                {
+                  return { style: column.style, value: node.name };
+                }
+                else
+                {
+                  var property = _.find( node.detail, function( elem ) { return elem.name == column.label } ) || { value: "-" };
+                  return { style: column.style, value: property ? property.value : '' };
+                }
+              });
             })
-            .enter()
+
+        var td = tds.enter()
             .append("td")
                 .text(         function( column ) { return column.value; })
                 .attr("class", function( column ) { return column.style; });
-        });
-      });
+
+        trs.exit().remove();
+      }
     </script>
 
   </body>

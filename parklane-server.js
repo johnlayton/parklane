@@ -24,11 +24,13 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(app.router);
   app.use(require('less-middleware')({ 
-      src: __dirname + '/less' 
+      src:   path.join( __dirname, '/less' )
+    , dest:  path.join( __dirname, '/public' )
   }));
   app.use(browser({
     require : [ 'underscore', 
                 'domready', 
+                'traverse',
                 'jquery-browserify',
                 'd3', 
                 path.join(__dirname, 'js/entry.js') ]
@@ -56,7 +58,7 @@ app.get('/detail/json/:id', detail.json);
 app.get('/gantt/show/:id', gantt.show);
 app.get('/gantt/json/:id', gantt.json);
 
-app.get('/dates/list', dates.list);
+app.get('/dates/json', dates.json);
 
 http.createServer(app).listen(app.get('port'), "0.0.0.0", function(){
   console.log("Express server listening on port " + app.get('port'));

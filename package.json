@@ -20,6 +20,8 @@
     "less-middleware"   : "*",
     "node-sass"         : "*",
     "underscore.nested" : "*",
-    "deepmerge"         : "*"
+    "deepmerge"         : "*",
+    "treeify"           : "*",
+    "traverse"          : "*"
   }
 }

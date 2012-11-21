@@ -1,5 +1,5 @@
 $company-blue: #1875e7;
-$headcol-width: 8em;
+$headcol-width: 14em;
 
 @mixin additional($size: 10px) {
 	font-weight: bold;
@@ -33,6 +33,7 @@ $headcol-width: 8em;
 	    top: auto;
 	    border-right: 0px none black; 
 	    text-align: right;
+	    cursor: pointer;
 	    // border-top-width:3px;
 	    // margin-top:-3px;
 	}
@@ -46,6 +47,9 @@ $headcol-width: 8em;
 	}
 }
 
+.hidden {
+	display: none;
+}
 
 div { 
 
@@ -83,7 +87,12 @@ div {
 			    // border:3px solid grey; 
 			    // border-top-width:0px; 
 			    white-space:nowrap;
+
 				}
+		    .rotate {
+			    -webkit-transform: rotate(-60deg); 
+          -moz-transform: rotate(-60deg);	
+      	}
 
 			}
 
@@ -120,9 +129,10 @@ div {
 	}
 
   width: 400px; 
-  margin-left: $headcol-width; 
+  margin-left: 6em; 
   overflow-x: scroll;  
   overflow-y: visible;
-  scroll: visible;
+  // scroll: visible;
+  overflow: ;
   padding-bottom: 1px;
 }
