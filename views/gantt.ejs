@@ -2,9 +2,8 @@
 <html>
   <head>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-    <link rel='stylesheet' href='/stylesheets/gantt.css' />
-    <!-- <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Unkempt'> -->
+    <script src="/socket.io/socket.io.js"></script>
+    <link   rel='stylesheet' href='/stylesheets/gantt.css' />
   </head>
   <body>
 
@@ -15,13 +14,17 @@
 
     <script>
 
-      var d3 = require('d3');
-      var _  = require('underscore');
-      var $  = require('jquery-browserify');
+      var util     = require('util');
+      var traverse = require('traverse');
+      var d3       = require('d3');
+      var _        = require('underscore');
+      var $        = require('jquery-browserify');
+      var merge    = require('/lib/obj-merge.js');
 
       var m = [20, 20, 20, 20],
           w = 1280 - m[1] - m[3],
           h =  800 - m[0] - m[2],
+          i = 0,
           duration = 500,
           root;
 
@@ -50,7 +53,8 @@
       });
 
       function label( node ) {
-        return node.name;
+//        return node.name + ( node._children ? " - (" + node._children.length + ")" : "" );
+        return node.name + ( ( node.children && node.collapsed ) ? " - (" + node.children.length + ")" : "" );
       }
 
       function collapse( d ) {
@@ -63,6 +67,7 @@
       }
 
       function click( d ) {
+        /*
         if ( d.children ) {
           d._children = d.children;
           d.children = null;
@@ -70,11 +75,9 @@
           d.children = d._children;
           d._children = null;
         }
+        */
+        d.collapsed = !d.collapsed
         draw( d );
-      }
-
-      function color(d) {
-        return d._children ? "#3182bd" : d.children ? "#c6dbef" : "#fd8d3c";
       }
 
       function draw( json ) {
@@ -90,14 +93,13 @@
 
         var format = d3.time.format("%m/%d");
 
-        var tick = vis.selectAll("g.tick")
+        var ticks = vis.selectAll("g.tick")
           .data(x0.ticks(20))
 
-        var tickEnter = tick.enter().append("svg:g")
+        var tickEnter = ticks.enter().append("svg:g")
           .attr("class", "tick")
           .attr("transform", function(d) { 
             return "translate(" + x0(d) + "," + 20 + ")"; 
-            // return "translate(" + x0(d) + "," + (h / 2) + ")"; 
           });
 
         tickEnter.append("svg:line")
@@ -109,7 +111,6 @@
           .attr("y1", h / 2)
           .style("stroke", "#bbb")
           .style("stroke-width", "1.5px");
-
 
         tickEnter.append("svg:text")
           .attr("y", -15)
@@ -125,40 +126,93 @@
         var nodes = tree.nodes( root );
 
         nodes.forEach(function(d, index) { 
-          // d.y = ( 10 + ( d.depth * 10 ) );
           d.x = 0;
           d.y = ( 20 + ( index * 25 ) );
         });
 
+        tree.children(function( node ) {
+          return node.collapsed ? [] : node.children;
+        });
+
         var tasks = vis.selectAll("g.task")
-          .data(nodes, function( d, index ) { 
-            return d.index || ( d.index = index ); 
+          .data(nodes, function( d, index ) {
+            return d.index || ( d.index = ++i );
+//            return d.id;
           });
  
-        var task = tasks.enter().append("svg:g")
+        // ================================================================================
+        // Task Entry Strategy
+        // ================================================================================
+
+        var taskEnter = tasks.enter().append("svg:g")
           .attr("class", "task")
           .style("opacity", 1e-6)
           .attr("transform", function(d) { 
-            return "translate(" + d.x + "," + json.y0 + ")"; 
+            return "translate(" + d.x + "," + d.y + ")"; 
           })
 
-        task.append("svg:text")
+        taskEnter.transition()
+            .duration(duration)
+            .attr("transform", function(d) { 
+              return "translate(" + d.x0 + "," + d.y0 + ")"; 
+            })
+            .style("opacity", 1);
+
+        taskEnter.append("svg:text")
           .attr("class", "label")
           .attr("transform", function(d) { 
-            return "translate(" + ( d.depth * 10 ) + "," + 0 + ")"; 
+            return "translate(" + ( ( d.depth * 10 ) + 10 ) + "," + 20 + ")"; 
           })
-          .attr("dy", 13.5)
-          // .attr("dx", 5.5)
           .text(function(d) { 
             return label( d ); 
           })
+          .on("click", click)
+        // .on( "click", function(d) {
+        //   window.open( d.link, "_self" )
+        // });
+
+        // taskEnter.append("svg:text")
+        //   .attr("class", "meta")
+
+        taskEnter.append("svg:circle")  
+          .attr("class", "twister")
+          .attr("r", 4.5)
+          .attr("transform", function(d) { 
+            return "translate(" + ( d.depth * 10 ) + "," + 14 + ")"; 
+          })
+          .style("fill", function(d) { 
+        //    return d._children ? "lightsteelblue" : "#fff";
+            return ( d.children && d.collapsed ) ? "lightsteelblue" : "#fff";
+          })
           .on("click", click);
- 
+         
+        // ================================================================================
+        // Task Update Strategy
+        // ================================================================================
+
+        var taskUpdate = tasks.transition()
+          .duration(duration)
+          .attr("transform", function(d) { 
+            return "translate(" + d.x + "," + d.y + ")"; 
+          });
+
+        taskUpdate.selectAll("text")
+          .text(function(d) { 
+            return label( d ); 
+          })
+
+        taskUpdate.selectAll("circle")
+          .attr("r", 4.5)
+          .style("fill", function(d) { 
+            //return d._children ? "lightsteelblue" : "#fff";
+            return ( d.children && d.collapsed ) ? "lightsteelblue" : "#fff";
+          });
+
         // ================================================================================
         // Gantt layout - Valid Tasks
         // ================================================================================
 
-        var valid = task.selectAll("g.valid")
+        var valid = taskEnter.selectAll("g.valid")
           .data( function(node, index) { 
             if ( node.valid ) {
               return _.map( node.valid, function( valid ) { return { 
@@ -172,7 +226,8 @@
               return [];
             }
           })
-          .enter()
+
+        var validEnter = valid.enter()
           .append("svg:g")
           .attr("class", "valid")
           .attr("transform", function( valid ) {
@@ -183,7 +238,7 @@
             }
           });
 
-        valid.append("rect")
+        validEnter.append("rect")
           .attr("width", function( valid ) {
             return ( x0( new Date( valid.finish ) ) - x0( new Date( valid.start ) ) );
           })
@@ -200,7 +255,7 @@
         // Gantt layout - Linked Tasks
         // ================================================================================
 
-        var linked = task.selectAll("g.linked")
+        var linked = taskEnter.selectAll("g.linked")
           .data( function(node, index) { 
             if ( node.linked ) {
               return _.map( node.linked, function( linked ) { return { 
@@ -215,7 +270,8 @@
               return [];
             }
           })
-          .enter()
+
+        var linkedEnter = linked.enter()
           .append("svg:g")
           .attr("class", "linked")
           .attr("transform", function( linked ) {
@@ -226,40 +282,37 @@
             }
           });
 
-        linked.append("rect")
+        linkedEnter.append("rect")
           .attr("width", function( linked ) {
             return ( x0( new Date( linked.finish ) ) - x0( new Date( linked.start ) ) );
           })
           .attr("height", 20)
           .attr("rx", "4")
           .attr("ry", "4")
-          .style("fill", "lightsteelblue")
-          .on( "click", function(d) { 
-            //alert( d.link ); 
-            window.open( d.link, "_self" )
-          });
+          .style("fill", "lightsteelblue");
 
         // ================================================================================
-        // Exit Strategy
+        // Task Exit Strategy
         // ================================================================================
 
-        task.transition()
-            .duration(duration)
-            .attr("transform", function(d) { 
-              return "translate(" + d.x + "," + d.y + ")"; 
-            })
-            .style("opacity", 1);
-        
         tasks.transition()
           .duration(duration)
           .attr("transform", function(d) { 
             return "translate(" + d.x + "," + d.y + ")"; 
           })
-          .style("opacity", 1)
-          .select("rect")
-          .style("fill", "lightsteelblue");
+          .style("opacity", 1);
+         
+
+        // tasks.transition()
+        //   .duration(duration)
+        //   .attr("transform", function(d) { 
+        //     return "translate(" + d.x + "," + d.y + ")"; 
+        //   })
+        //   .style("opacity", 1)
+        //   .select("rect")
+        //   .style("fill", "lightsteelblue");
         
-        tasks.exit().transition()
+        var taskExit = tasks.exit().transition()
           .duration(duration)
           .attr("transform", function(d) { 
             return "translate(" + d.x0 + "," + d.y0 + ")"; 
@@ -267,13 +320,49 @@
           .style("opacity", 1e-6)
           .remove();
 
+        // taskExit.select("circle")
+        //   .attr("r", 1e-6);
+
         nodes.forEach(function(d) {
           d.x0 = d.x;
           d.y0 = d.y;
         });
-
-
       }
+
+      var socket = io.connect('http://192.168.1.3:3001/gantt', {});
+      socket.on('connect', function () {
+        socket.emit('query', {
+          id   : '<%= parent %>',
+          name : '<%= name %>',
+          from : new Date( '<%= from %>' ),
+          to   : new Date( '<%= to %>' )
+        });
+        socket.on("update", function( json ) {
+          json.x0 = 0;
+          json.y0 = 0;
+/*
+          console.log( "#############" );
+          console.log( json );
+          console.log( root );
+          console.log( "#############" );
+*/
+          merge.copy( json, root, function( a ) {
+            return function( b ) {
+              if ( a.id && b.id )
+              {
+                return a.id == b.id;
+              } else {
+                return _.isEqual( a, b );
+              }
+            }
+          });
+          console.log( root );
+          json.x0 = 0;
+          json.y0 = 0;
+          draw( root )
+        });
+      });
+
     </script>
   </body>
 </html>

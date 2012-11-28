@@ -20,14 +20,12 @@ exports.show = function(req, res){
 }
 
 exports.json = function(req, res){
-
   var db = mysql.createConnection({
     host     : '192.168.56.101',
     database : 'tree',
     user     : 'tree',
     password : 'tree'
   });
-
   var node = {
     id:   req.params.id,
     name: req.query.name,
@@ -38,8 +36,7 @@ exports.json = function(req, res){
       }
     ]
   }
-
-  query(db, sql.node, node, function( top ) { 
+  query.query(db, sql.node, node, function( top ) {
     res.send( top )
     db.end()
   });

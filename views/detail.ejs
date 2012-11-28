@@ -2,7 +2,6 @@
 <html>
   <head>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
     <link rel='stylesheet' href='/stylesheets/table.css' />
   </head>
   <body>
@@ -115,7 +114,7 @@
               return _.map( columns, function( column ) {
                 if( column.label === 'id' )
                 {
-                  return { style: column.style, value: node.name };
+                  return { style: column.style + " indent_" + node.depth, value: node.name };
                 }
                 else
                 {

@@ -39,7 +39,7 @@ exports.json = function(req, res){
     ]
   }
 
-  query(db, sql.node, node, function( top ) { 
+  query.query(db, sql.node, node, function( top ) {
     res.send( top )
     db.end()
   });

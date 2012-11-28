@@ -35,7 +35,7 @@ DROP TABLE IF EXISTS `dates`;
 CREATE TABLE `dates` (
   `id` int(11) NOT NULL,
   `start` timestamp NULL DEFAULT NULL,
-  `finish` datetime DEFAULT NULL,
+  `finish` timestamp DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -46,7 +46,19 @@ CREATE TABLE `dates` (
 
 LOCK TABLES `dates` WRITE;
 /*!40000 ALTER TABLE `dates` DISABLE KEYS */;
-INSERT INTO `dates` VALUES (1,'2012-10-29 13:00:00','2012-10-30 23:59:59'),(2,'2012-10-30 13:00:00','2012-10-31 23:59:59'),(3,'2012-10-31 13:00:00','2012-11-01 23:59:59'),(4,'2012-11-01 13:00:00','2012-11-02 23:59:59'),(5,'2012-11-02 13:00:00','2012-11-03 23:59:59'),(6,'2012-10-29 13:00:00','2012-11-03 23:59:59'),(7,'2012-11-05 13:00:00','2012-11-06 23:59:59'),(8,'2012-11-06 13:00:00','2012-11-07 23:59:59'),(9,'2012-11-07 13:00:00','2012-11-08 23:59:59'),(10,'2012-11-08 13:00:00','2012-11-09 23:59:59'),(11,'2012-11-09 13:00:00','2012-11-10 23:59:59'),(12,'2012-11-05 13:00:00','2012-11-10 23:59:59');
+INSERT INTO `dates` VALUES 
+  (1, '2012-10-29 13:00:00','2012-10-30 12:59:59'),
+  (2, '2012-10-30 13:00:00','2012-10-31 12:59:59'),
+  (3, '2012-10-31 13:00:00','2012-11-01 12:59:59'),
+  (4, '2012-11-01 13:00:00','2012-11-02 12:59:59'),
+  (5, '2012-11-02 13:00:00','2012-11-03 12:59:59'),
+  (6, '2012-10-29 13:00:00','2012-11-03 12:59:59'),
+  (7, '2012-11-05 13:00:00','2012-11-06 12:59:59'),
+  (8, '2012-11-06 13:00:00','2012-11-07 12:59:59'),
+  (9, '2012-11-07 13:00:00','2012-11-08 12:59:59'),
+  (10,'2012-11-08 13:00:00','2012-11-09 12:59:59'),
+  (11,'2012-11-09 13:00:00','2012-11-10 12:59:59'),
+  (12,'2012-11-05 13:00:00','2012-11-10 12:59:59');
 /*!40000 ALTER TABLE `dates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -70,7 +82,10 @@ CREATE TABLE `detail` (
 
 LOCK TABLES `detail` WRITE;
 /*!40000 ALTER TABLE `detail` DISABLE KEYS */;
-INSERT INTO `detail` VALUES (1,'Desc'),(2,'Description'),(3,'City'),(4,'State');
+INSERT INTO `detail` VALUES 
+  (1,'Description'),
+  (2,'City'),
+  (3,'State');
 /*!40000 ALTER TABLE `detail` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -95,7 +110,14 @@ CREATE TABLE `details` (
 
 LOCK TABLES `details` WRITE;
 /*!40000 ALTER TABLE `details` DISABLE KEYS */;
-INSERT INTO `details` VALUES (1,1,'Root'),(1,2,'Root Node'),(1,4,'Victoria'),(2,1,'Child'),(2,2,'First Child Node'),(2,3,'Melbourne'),(3,1,'Child'),(3,2,'Second Child Node'),(4,3,'Hobart'),(4,4,'Tasmania');
+INSERT INTO `details` VALUES 
+  (1,1,'Root Node'),
+  (1,3,'Victoria'),
+  (2,1,'First Child Node'),
+  (2,2,'Melbourne'),
+  (3,1,'Second Child Node'),
+  (4,2,'Hobart'),
+  (4,3,'Tasmania');
 /*!40000 ALTER TABLE `details` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -119,7 +141,15 @@ CREATE TABLE `linked` (
 
 LOCK TABLES `linked` WRITE;
 /*!40000 ALTER TABLE `linked` DISABLE KEYS */;
-INSERT INTO `linked` VALUES (1,1),(2,1),(3,2),(4,2),(6,2),(6,4),(7,10),(8,10);
+INSERT INTO `linked` VALUES 
+  (1,1),
+  (2,1),
+  (3,2),
+  (4,2),
+  (6,2),
+  (6,4),
+  (7,10),
+  (8,10);
 /*!40000 ALTER TABLE `linked` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -143,7 +173,15 @@ CREATE TABLE `task` (
 
 LOCK TABLES `task` WRITE;
 /*!40000 ALTER TABLE `task` DISABLE KEYS */;
-INSERT INTO `task` VALUES (1,'Wildfire 1'),(2,'Task 1'),(3,'Task 2'),(4,'Task 3'),(5,'Task 4'),(6,'Task 5'),(7,'Task 6'),(8,'Wildfire 2');
+INSERT INTO `task` VALUES 
+  (1,'Wildfire 1'),
+  (2,'Task 1'),
+  (3,'Task 2'),
+  (4,'Task 3'),
+  (5,'Task 4'),
+  (6,'Task 5'),
+  (7,'Task 6'),
+  (8,'Wildfire 2');
 /*!40000 ALTER TABLE `task` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -168,7 +206,15 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (1,1,2),(2,1,3),(3,1,4),(4,4,5),(5,5,6),(6,3,7),(7,8,5),(8,5,6);
+INSERT INTO `tasks` VALUES 
+  (1,1,2),
+  (2,1,3),
+  (3,1,4),
+  (4,4,5),
+  (5,5,6),
+  (6,3,7),
+  (7,8,5),
+  (8,5,6);
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -192,7 +238,13 @@ CREATE TABLE `valid` (
 
 LOCK TABLES `valid` WRITE;
 /*!40000 ALTER TABLE `valid` DISABLE KEYS */;
-INSERT INTO `valid` VALUES (1,6),(1,12),(2,6),(3,6),(8,2),(8,12);
+INSERT INTO `valid` VALUES 
+  (1,6),
+  (1,12),
+  (2,6),
+  (3,6),
+  (8,2),
+  (8,12);
 /*!40000 ALTER TABLE `valid` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

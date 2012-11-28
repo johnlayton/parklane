@@ -1,6 +1,18 @@
 $company-blue: #1875e7;
 $headcol-width: 14em;
 
+@font-face {
+  font-family: 'unkempt';
+  font-style: normal;
+  font-weight: 400;
+  src: local('unkempt'), url(/fonts/unkempt.woff) format('woff');
+}
+
+body {
+  font-family: 'Unkempt', cursive;
+  // font-family: 'arial';
+}
+
 @mixin additional($size: 10px) {
 	font-weight: bold;
 	font-size: $size;
@@ -25,6 +37,18 @@ $headcol-width: 14em;
   }
 }
 
+.indent_1 {
+	padding-left: 20px;
+}
+
+.indent_2 {
+	padding-left: 30px;
+}
+
+.indent_3 {
+	padding-left: 40px;
+}
+
 @mixin header {
 	.fixed {
 	    position: absolute; 
@@ -32,10 +56,11 @@ $headcol-width: 14em;
 	    left: 0;
 	    top: auto;
 	    border-right: 0px none black; 
-	    text-align: right;
+	    // text-align: right;
 	    cursor: pointer;
+	    background-color: #fff;
 	    // border-top-width:3px;
-	    // margin-top:-3px;
+	    // margin-left:10px;
 	}
 
 	.header {
@@ -61,7 +86,6 @@ div {
 		border-collapse:separate; 
 		// border-top: 3px solid grey; 
 
-		font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
 		font-size: 12px;
 		margin: 45px;
 		width: 480px;
@@ -129,7 +153,7 @@ div {
 	}
 
   width: 400px; 
-  margin-left: 6em; 
+  margin-left: 9em; 
   overflow-x: scroll;  
   overflow-y: visible;
   // scroll: visible;

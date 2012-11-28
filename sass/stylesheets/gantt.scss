@@ -1,26 +1,24 @@
+@font-face {
+  font-family: 'unkempt';
+  font-style: normal;
+  font-weight: 400;
+  src: local('unkempt'), url(/fonts/unkempt.woff) format('woff');
+}
+
 body {
   font-family: 'Unkempt', cursive;
+  // font-family: 'arial';
 }
 
 svg {
-	.task .label {
-	  cursor: pointer;
+	.task {
+    .label {
+	    cursor: pointer;
+    }
+    .twister {
+      cursor: pointer;
+      stroke: steelblue;
+      stroke-width: 1.5px;
+    }
 	}
-}
-
-.node circle {
-  cursor: pointer;
-  fill: #fff;
-  stroke: steelblue;
-  stroke-width: 1.5px;
-}
-
-.node text {
-  font: 10px sans-serif;
-}
-
-path.link {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 1.5px;
 }
